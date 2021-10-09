@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:proxy="http://www.mulesoft.org/schema/mule/proxy"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+        http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
+        http://www.mulesoft.org/schema/mule/proxy http://www.mulesoft.org/schema/mule/proxy/current/mule-proxy.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <configuration-properties file="config.properties"/>
+
+    <configuration defaultResponseTimeout="${proxy.responseTimeout}"/>
+
+    <proxy:config name="proxy-config"/>
+
+    <flow name="proxy">
+        <http:listener config-ref="http-listener-config" path="${proxy.path}" responseStreamingMode="AUTO">
+            <http:response statusCode="#[attributes.statusCode]" reasonPhrase="#[attributes.reasonPhrase]">
+                <http:headers>#[if (vars.proxyResponseHeaders?) vars.proxyResponseHeaders else {}]</http:headers>
+            </http:response>
+        </http:listener>
+
+        <logger level="INFO" doc:name="URIパラメータログ出力" doc:id="1e80c624-17bc-4a4b-a4c7-098c71c696b2" message="#[attributes.uriParams['xanet']]" category="URIParam:"/>
+		<set-variable value="#[${xanetlist}]" doc:name="プロパティー情報設定処理" doc:id="aee5e85b-26a4-42af-9d0e-399b53861bce" variableName="xanetlist"/>
+		<set-variable value="#[vars.xanetlist filter (item, index) -&gt; (item[attributes.uriParams['xanet'] default '' as String] != null)]" doc:name="XANETサーバ情報取得処理" doc:id="7a22c0b2-7c40-49b3-8d95-13bc382fb994" variableName="hostinfo"/>
+		<logger level="INFO" doc:name="接続先情報ログ出力" doc:id="ab86c7e5-86e0-471e-9ff7-2296b2f29c91" message="#[vars.host]" category="Host:"/>
+		<proxy:request-headers config-ref="proxy-config" target="proxyRequestHeaders"/>
+
+        <http:request config-ref="http-request-config" method="#[attributes.method]"
+                      path="#[if (attributes.maskedRequestPath == '/' and attributes.requestUri[-1] != '/') '' else attributes.maskedRequestPath]">
+            <http:headers>#[vars.proxyRequestHeaders]</http:headers>
+            <http:uri-params>#[attributes.uriParams]</http:uri-params>
+            <http:query-params>#[attributes.queryParams]</http:query-params>
+            <http:response-validator>
+                <http:success-status-code-validator values="0..599"/>
+            </http:response-validator>
+        </http:request>
+
+        <proxy:response-headers config-ref="proxy-config" target="proxyResponseHeaders"/>
+
+        <error-handler>
+            <on-error-continue type="HTTP:TIMEOUT" logException="false">
+                <ee:transform>
+                    <ee:message>
+                        <ee:set-attributes>
+                            {
+                                statusCode: 504
+                            }
+                        </ee:set-attributes>
+                    </ee:message>
+                </ee:transform>
+            </on-error-continue>
+        </error-handler>
+    </flow>
+</mule>

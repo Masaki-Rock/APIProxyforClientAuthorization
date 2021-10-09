@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+
+    <http:request-config name="http-request-config" basePath="${implementation.path}" enableCookies="false">
+        <http:request-connection host="#[vars.hostinfo[0][attributes.uriParams['xanet']]]" port="#[vars.hostinfo[0]['port']]"
+                                 protocol="${implementation.protocol}">
+			<tls:context >
+				<tls:trust-store path="mule_dev_server.p12" password="password" type="pkcs12"/>
+				<tls:key-store type="pkcs12" path="mule_client_server.p12" alias="client" keyPassword="password" password="password" />
+			</tls:context>
+		</http:request-connection>
+    </http:request-config>
+
+</mule>
