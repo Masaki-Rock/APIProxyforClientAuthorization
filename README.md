@@ -1,0 +1,2 @@
+# APIProxyforClientAuthorization
+URIパラメータをキーに複数のサーバにクライアント認証してリクエストを振り分けるAPIプロキシ
