@@ -24,9 +24,9 @@
             </http:response>
         </http:listener>
 
-        <logger level="INFO" doc:name="URIパラメータログ出力" doc:id="1e80c624-17bc-4a4b-a4c7-098c71c696b2" message="#[attributes.uriParams['xanet']]" category="URIParam:"/>
-		<set-variable value="#[${xanetlist}]" doc:name="プロパティー情報設定処理" doc:id="aee5e85b-26a4-42af-9d0e-399b53861bce" variableName="xanetlist"/>
-		<set-variable value="#[vars.xanetlist filter (item, index) -&gt; (item[attributes.uriParams['xanet'] default '' as String] != null)]" doc:name="XANETサーバ情報取得処理" doc:id="7a22c0b2-7c40-49b3-8d95-13bc382fb994" variableName="hostinfo"/>
+        <logger level="INFO" doc:name="URIパラメータログ出力" doc:id="1e80c624-17bc-4a4b-a4c7-098c71c696b2" message="#[attributes.uriParams['server']]" category="URIParam:"/>
+		<set-variable value="#[${serverlist}]" doc:name="プロパティー情報設定処理" doc:id="aee5e85b-26a4-42af-9d0e-399b53861bce" variableName="serverlist"/>
+		<set-variable value="#[vars.serverlist filter (item, index) -&gt; (item[attributes.uriParams['server'] default '' as String] != null)]" doc:name="サーバ情報取得処理" doc:id="7a22c0b2-7c40-49b3-8d95-13bc382fb994" variableName="hostinfo"/>
 		<logger level="INFO" doc:name="接続先情報ログ出力" doc:id="ab86c7e5-86e0-471e-9ff7-2296b2f29c91" message="#[vars.host]" category="Host:"/>
 		<proxy:request-headers config-ref="proxy-config" target="proxyRequestHeaders"/>
 
